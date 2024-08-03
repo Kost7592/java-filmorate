@@ -21,7 +21,7 @@ import static java.util.Objects.isNull;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Long, User> users = new HashMap<>();
-    private long idCount = 0;
+    private long idCount = 1;
 
     /**
      * Метод getAllUsers возвращает всех пользователей из коллекции users.

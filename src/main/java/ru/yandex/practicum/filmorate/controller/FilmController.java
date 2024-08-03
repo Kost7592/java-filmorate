@@ -17,7 +17,7 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
-    private long idCount = 0;
+    private long idCount = 1;
     private static final LocalDate FILM_REFERENCE_POINT = LocalDate.of(1895, 12, 28);
     private static final int DESCRIPTION_LENGTH = 200;
 
