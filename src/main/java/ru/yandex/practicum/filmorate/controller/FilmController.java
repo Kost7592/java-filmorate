@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.*;
+
+import static ru.yandex.practicum.filmorate.controller.Validator.validateFilm;
 
 /**
  * Класс FilmController представляет собой контроллер, который обрабатывает запросы к фильмам.
@@ -18,8 +18,6 @@ import java.util.*;
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
     private long idCount = 1;
-    private static final LocalDate FILM_REFERENCE_POINT = LocalDate.of(1895, 12, 28);
-    private static final int DESCRIPTION_LENGTH = 200;
 
     /**
      * Метод getAllFilms возвращает все фильмы из коллекции films.
@@ -55,28 +53,6 @@ public class FilmController {
         }
         log.error("Фильм с данным id: {} не найден.", updatedFilm.getId());
         throw new NotFoundException("Фильм с данным id:" + updatedFilm.getId() + " не найден!");
-    }
-
-    /**
-     * Метод validateFilm проверяет корректность данных фильма
-     */
-    private void validateFilm(Film validationFilm) {
-        if (validationFilm.getName().isEmpty() || validationFilm.getName().isBlank()) {
-            log.error("Поле имя пустое.");
-            throw new ValidationException("Имя не может быть пустым!");
-        }
-        if (validationFilm.getDescription().length() > DESCRIPTION_LENGTH) {
-            log.error("Поле описания больше {} символов.", DESCRIPTION_LENGTH);
-            throw new ValidationException("Описания не может быть длиннее " + DESCRIPTION_LENGTH + "символов!");
-        }
-        if (validationFilm.getReleaseDate().isBefore(FILM_REFERENCE_POINT)) {
-            log.error("Дата релиза раньше {} .", FILM_REFERENCE_POINT);
-            throw new ValidationException("Дата релиза фильма не может быть раньше " + FILM_REFERENCE_POINT + "!");
-        }
-        if (validationFilm.getDuration() <= 0) {
-            log.error("Продолжительность фильма ноль или отрицательное число.");
-            throw new ValidationException("Продолжительность фильма не может быть нулем или отрицательным числом");
-        }
     }
 
     private long getNextId() {
