@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.storage.Validator.validateFilm;
-
 /**
  * Класс FilmController представляет собой контроллер, который обрабатывает запросы к фильмам.
  */
@@ -49,7 +47,7 @@ public class FilmController {
      * Метод updateFilm обновляет данные фильма на основе данных из запроса.
      */
     @PutMapping
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.OK)
     public Film updateFilm(@RequestBody Film updatedFilm) {
         filmService.updateFilm(updatedFilm);
         return updatedFilm;
@@ -70,7 +68,7 @@ public class FilmController {
     @GetMapping("/popular?count={count}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        filmService.get
+        return filmService.getLikedFilms();
     }
 
 }

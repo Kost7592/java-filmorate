@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import static ru.yandex.practicum.filmorate.storage.Validator.validateFilm;
 
+@Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
@@ -30,7 +32,7 @@ public class InMemoryFilmStorage implements FilmStorage {
      */
 
     @Override
-    public Film createFilm(@RequestBody Film newFilm) {
+    public Film createFilm(Film newFilm) {
         validateFilm(newFilm);
         newFilm.setId(getNextId());
         films.put(newFilm.getId(), newFilm);
@@ -42,7 +44,7 @@ public class InMemoryFilmStorage implements FilmStorage {
      * Метод updateFilm обновляет данные фильма на основе данных из запроса.
      */
     @Override
-    public Film updateFilm(@RequestBody Film updatedFilm) {
+    public Film updateFilm(Film updatedFilm) {
         if (films.containsKey(updatedFilm.getId())) {
             validateFilm(updatedFilm);
             films.replace(updatedFilm.getId(), updatedFilm);
@@ -55,6 +57,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film getFilmById(Long id) {
+        if (!films.containsKey(id)) {
+            throw new NotFoundException("Фильм с id " + id + " не найден");
+        }
         return films.get(id);
     }
 

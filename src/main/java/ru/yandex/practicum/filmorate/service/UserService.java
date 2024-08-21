@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -24,31 +23,41 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.getFriends().add(friend.getId());
-        friend.getFriends().add(user.getId());
+        User user;
+        try {
+            user = userStorage.getUserById(userId);
+        } catch (NotFoundException e) {
+            throw new NotFoundException("Пользователь с id: " + userId + " не найден");
+        }
+        User friend;
+        try {
+            friend = userStorage.getUserById(friendId);
+        } catch (NotFoundException e) {
+            throw new NotFoundException("Пользователь с id: " + friendId + " не найден");
+        }
+        user.getFriends().add(friendId);
+        friend.getFriends().add(userId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        if (!(user.getFriends().contains(friend.getId()))) {
-            throw new NotFoundException(user.getName() + " не является другом для " + friend.getName());
-        }
-        user.getFriends().remove(friend.getId());
-        friend.getFriends().remove(user.getId());
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        User user = getUserById(userId);
-        User otherUser = getUserById(otherUserId);
+        User user = userStorage.getUserById(userId);
+        User otherUser = userStorage.getUserById(otherUserId);
         Set<Long> friend1Friends = user.getFriends();
         Set<Long> friends2Friends = otherUser.getFriends();
-        return friend1Friends.stream()
-                .filter(friends2Friends::contains)
-                .map(this::getUserById)
-                .toList();
+        List<User> commonFriends = new ArrayList<>();
+        for (Long idFriends : friend1Friends) {
+            if (friends2Friends.contains(idFriends)) {
+                commonFriends.add(userStorage.getUserById(idFriends));
+            }
+        }
+        return commonFriends;
     }
 
     public Collection<User> getAllUsers() {
@@ -71,6 +80,9 @@ public class UserService {
 
     public List<User> getUserFriends(Long id) {
         Set<Long> friendsId = userStorage.getUserById(id).getFriends();
+        if (friendsId.isEmpty()) {
+            throw new NotFoundException("Список друзей пользователя с id:" + id + " пуст");
+        }
         List<User> users = new ArrayList<>();
         friendsId.stream()
                 .map(userStorage::getUserById)

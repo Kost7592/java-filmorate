@@ -39,7 +39,7 @@ public class InMemoryUserStorage implements UserStorage {
      * Метод updateUser обновляет данные пользователя на основе данных из запроса.
      */
     @Override
-    public User updateUser(@RequestBody User updatedUser) {
+    public User updateUser(User updatedUser) {
         if (users.containsKey(updatedUser.getId())) {
             validateUser(updatedUser);
             users.replace(updatedUser.getId(), updatedUser);

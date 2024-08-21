@@ -35,7 +35,7 @@ public class FilmService {
         film.getLikes().remove(user.getId());
     }
 
-    public List<Film> getLikes(Film film) {
+    public List<Film> getLikedFilms() {
         InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
         Collection<Film> films = filmStorage.getAllFilms();
         return films.stream()
