@@ -19,7 +19,7 @@ public class UserControllerTest {
 
     @Autowired
     private UserController userController;
-    
+
     /**
      * Метод validateNotCreateUserWithEmptyEmail проверяет поведение класса UserController при добавлении пользователя
      * с пустым @mail.
