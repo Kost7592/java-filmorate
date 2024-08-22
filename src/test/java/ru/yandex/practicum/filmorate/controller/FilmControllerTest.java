@@ -18,6 +18,7 @@ public class FilmControllerTest {
 
     @Autowired
     private FilmController filmController;
+
     /**
      * Метод validateNotAddFilmWithEmptyName проверяет поведение класса при добавлении фильма с пустым именем
      */
