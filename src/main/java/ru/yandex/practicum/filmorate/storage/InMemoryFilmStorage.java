@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -12,6 +11,10 @@ import java.util.Map;
 
 import static ru.yandex.practicum.filmorate.storage.Validator.validateFilm;
 
+/**
+ * Класс InMemoryFilmStorage — это компонент, который реализует функциональность FilmStorage.
+ * Он обеспечивает хранение информации о фильмах в памяти приложения.
+ */
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -19,7 +22,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private long idCount = 1;
 
     /**
-     * Метод getAllFilms возвращает все фильмы из коллекции films.
+     * Метод getAllFilms возвращает все фильмы хеш таблицы films.
      */
     @Override
     public Collection<Film> getAllFilms() {
@@ -28,7 +31,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     /**
-     * Метод createFilm создает фильм на основе данных из запроса.
+     * Метод createFilm создает новый фильм.
      */
 
     @Override
@@ -41,7 +44,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     /**
-     * Метод updateFilm обновляет данные фильма на основе данных из запроса.
+     * Метод updateFilm обновляет информацию о фильме.
      */
     @Override
     public Film updateFilm(Film updatedFilm) {
@@ -55,9 +58,13 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new NotFoundException("Фильм с данным id:" + updatedFilm.getId() + " не найден!");
     }
 
+    /**
+     * Метод getFilmById возвращает фильм по идентификатору id.
+     */
     @Override
     public Film getFilmById(Long id) {
         if (!films.containsKey(id)) {
+            log.error("Нельзя получить фильм с данным id: {}, так как он не найден.", id);
             throw new NotFoundException("Фильм с id " + id + " не найден");
         }
         return films.get(id);

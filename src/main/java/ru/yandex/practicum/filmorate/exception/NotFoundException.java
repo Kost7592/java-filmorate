@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.exception;
 
 /**
- * Класс NotFoundException представляет собой исключение, которое возникает при попытке доступа к объекту, который
- * не найден в системе.
+ * Класс NotFoundException представляет собой исключение, которое возникает при попытке доступа к объекту,
+ * не найденному в системе.
  */
 public class NotFoundException extends RuntimeException {
 

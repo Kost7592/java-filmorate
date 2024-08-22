@@ -1,8 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -14,7 +11,7 @@ public interface FilmStorage {
 
     Film createFilm(@RequestBody Film newFilm);
 
-    Film updateFilm (@RequestBody Film updatedFilm);
+    Film updateFilm(@RequestBody Film updatedFilm);
 
     Film getFilmById(Long id);
 }

@@ -1,8 +1,9 @@
-package controller;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.UserController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,11 +11,14 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 
 /**
- * Класс FilmControllerTest представляет собой тестовый класс, проверяющий работу класса UserController.
+ * Класс UserControllerTest представляет собой тестовый класс, проверяющий работу класса UserController.
  */
+@SpringBootTest
 public class UserControllerTest {
     User user;
 
+    @Autowired
+    private UserController userController;
     /**
      * Метод validateNotCreateUserWithEmptyEmail проверяет поведение класса UserController при добавлении пользователя
      * с пустым @mail.
@@ -27,7 +31,6 @@ public class UserControllerTest {
                 .name("Name")
                 .birthday(LocalDate.of(2000, 1, 1))
                 .build();
-        UserController userController = new UserController();
         Assertions.assertThrows(NotFoundException.class, () -> {
             userController.createUser(user);
         }, "Поле @mail пустое");
@@ -45,7 +48,6 @@ public class UserControllerTest {
                 .name("Name")
                 .birthday(LocalDate.of(2000, 1, 1))
                 .build();
-        UserController userController = new UserController();
         Assertions.assertThrows(ValidationException.class, () -> {
             userController.createUser(user);
         }, "Поле логин пустое");
@@ -63,7 +65,6 @@ public class UserControllerTest {
                 .name("Name")
                 .birthday(LocalDate.of(2025, 1, 1))
                 .build();
-        UserController userController = new UserController();
         Assertions.assertThrows(ValidationException.class, () -> {
             userController.createUser(user);
         }, "Поле дата рожждения больше текущей даты");
@@ -81,8 +82,6 @@ public class UserControllerTest {
                 .name("")
                 .birthday(LocalDate.of(2000, 6, 4))
                 .build();
-
-        UserController userController = new UserController();
         User userCreate = userController.createUser(user);
         Assertions.assertEquals(userCreate.getName(), userCreate.getLogin(),
                 "Пустое поле имя заменено полем логин");

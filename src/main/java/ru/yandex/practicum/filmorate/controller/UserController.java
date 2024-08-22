@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,29 +53,47 @@ public class UserController {
         return updatedUser;
     }
 
+    /**
+     * Метод getUserById возвращает пользователя с идентификатором id.
+     */
     @GetMapping("/{id}")
     public User getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id);
     }
 
+    /**
+     * Метод addFriendship добавляет в список друзей пользователя с идентификатором id пользователя с идентификатором
+     * friendId. И аналогично пользователю с идентификатором friendId в список друзей пользователя с идентификатором id.
+     */
     @PutMapping("{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
     public void addFriendship(@PathVariable Long id, @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
     }
 
+    /**
+     * Метод deleteFriendship удаляет из списка друзей пользователя с идентификатором id пользователя с
+     * идентификатором friendId. И аналогично у пользователя с идентификатором friendId из списка друзей пользователя с
+     * идентификатором id.
+     */
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteFriendship(@PathVariable Long id, @PathVariable Long friendId) {
         userService.deleteFriend(id, friendId);
     }
 
+    /**
+     * Метод getUserFriends возвращает список всех друзей пользователя с идентификатором id/
+     */
     @GetMapping("{id}/friends")
     @ResponseStatus(HttpStatus.OK)
     public List<User> getUserFriends(@PathVariable Long id) {
         return userService.getUserFriends(id);
     }
 
+    /**
+     * Метод getCommonFriends возвращает список общих друзей пользователей с идентификаторами id и otherId.
+     */
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
     public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {

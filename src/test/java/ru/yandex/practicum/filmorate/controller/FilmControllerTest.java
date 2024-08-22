@@ -1,8 +1,9 @@
-package controller;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.FilmController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -11,9 +12,12 @@ import java.time.LocalDate;
 /**
  * Класс FilmControllerTest представляет собой тестовый класс, проверяющий работу класса FilmController.
  */
+@SpringBootTest
 public class FilmControllerTest {
     Film film;
 
+    @Autowired
+    private FilmController filmController;
     /**
      * Метод validateNotAddFilmWithEmptyName проверяет поведение класса при добавлении фильма с пустым именем
      */
@@ -25,7 +29,6 @@ public class FilmControllerTest {
                 .releaseDate(LocalDate.of(2001, 1, 1))
                 .duration(100)
                 .build();
-        FilmController filmController = new FilmController();
         Assertions.assertThrows(ValidationException.class, () -> {
             filmController.createFilm(film);
         }, "Поле имя пустое.");
@@ -46,7 +49,6 @@ public class FilmControllerTest {
                 .releaseDate(LocalDate.of(2001, 1, 1))
                 .duration(100)
                 .build();
-        FilmController filmController = new FilmController();
         Assertions.assertThrows(ValidationException.class, () -> {
             filmController.createFilm(film);
         }, "Поле описания больше 200 символов.");
@@ -64,7 +66,6 @@ public class FilmControllerTest {
                 .releaseDate(LocalDate.of(1800, 1, 1))
                 .duration(100)
                 .build();
-        FilmController filmController = new FilmController();
         Assertions.assertThrows(ValidationException.class, () -> {
             filmController.createFilm(film);
         }, "Дата релиза раньше 1895-12-28");
@@ -82,7 +83,6 @@ public class FilmControllerTest {
                 .releaseDate(LocalDate.of(2001, 1, 1))
                 .duration(0)
                 .build();
-        FilmController filmController = new FilmController();
         Assertions.assertThrows(ValidationException.class, () -> {
             filmController.createFilm(film);
         }, "Продолжительность равно нулю");
