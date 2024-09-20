@@ -1,6 +1,7 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -14,6 +15,7 @@ import static java.util.Objects.isNull;
  * Класс Validator предоставляет методы проверки корректности данных.
  */
 @Slf4j
+@Component
 public class Validator {
     private static final LocalDate FILM_REFERENCE_POINT = LocalDate.of(1895, 12, 28);
     private static final int DESCRIPTION_LENGTH = 200;
@@ -24,7 +26,7 @@ public class Validator {
     /**
      * Метод validateUser проверяет корректность данных пользователя.
      */
-    protected static void validateUser(User validationUser) {
+    public void validateUser(User validationUser) {
         if (validationUser.getEmail().isEmpty() || validationUser.getEmail().isBlank()) {
             log.error("Поле @mail пустое");
             throw new NotFoundException("@mail не может быть пустым!");
@@ -54,7 +56,7 @@ public class Validator {
     /**
      * Метод validateFilm проверяет корректность данных фильма.
      */
-    protected static void validateFilm(Film validationFilm) {
+    public void validateFilm(Film validationFilm) {
         if (validationFilm.getName().isEmpty() || validationFilm.getName().isBlank()) {
             log.error("Поле имя пустое.");
             throw new ValidationException("Имя не может быть пустым!");

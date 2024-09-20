@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.Validator;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,13 +17,10 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@AllArgsConstructor
 public class UserController {
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final Validator validator;
 
     /**
      * Метод getAllUsers возвращает всех пользователей из коллекции users.
@@ -39,6 +37,7 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@RequestBody User newUser) {
+        validator.validateUser(newUser);
         userService.createUser(newUser);
         return newUser;
     }
@@ -49,6 +48,7 @@ public class UserController {
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public User updateUser(@RequestBody User updatedUser) {
+        validator.validateUser(updatedUser);
         userService.updateUser(updatedUser);
         return updatedUser;
     }
