@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,13 +17,9 @@ import java.util.stream.Collectors;
  * Он обеспечивает взаимодействие с UserStorage для хранения информации о пользователях.
  */
 @Service
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserStorage userStorage;
-
-    @Autowired
-    public UserServiceImpl(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final UserRepository userRepository;
 
     /**
      * Метод addFriend добавляет в множество друзей пользователя с идентификатором userId пользователя с
@@ -32,16 +28,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void addFriend(Long userId, Long friendId) {
-        User user = userStorage.getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("Пользователь с id: " + userId + " не найден");
-        }
-        User friend = userStorage.getUserById(friendId);
-        if (friend == null) {
-            throw new NotFoundException("Пользователь с id: " + friendId + " не найден");
-        }
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        userRepository.addFriend(getUserById(userId), getUserById(friendId));
     }
 
     /**
@@ -51,10 +38,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void deleteFriend(Long userId, Long friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        userRepository.deleteFriend(getUserById(userId), getUserById(friendId));
     }
 
     /**
@@ -62,14 +46,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        User user = userStorage.getUserById(userId);
-        User otherUser = userStorage.getUserById(otherUserId);
-        Set<Long> friend1Friends = user.getFriends();
-        Set<Long> friends2Friends = otherUser.getFriends();
-        return friend1Friends.stream()
-                .filter(friends2Friends::contains)
-                .map(userStorage::getUserById)
-                .collect(Collectors.toList());
+        final User user = userRepository.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с " + userId + "не найден"));
+        final User userOther = userRepository.getById(otherUserId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с " + otherUserId + "не найден"));
+        return userRepository.getCommonFriends(user, userOther);
     }
 
     /**
@@ -77,7 +58,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Collection<User> getAllUsers() {
-        return userStorage.getAllUsers();
+        return userRepository.getAllUsers();
     }
 
     /**
@@ -85,8 +66,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User createUser(User newUser) {
-        userStorage.createUser(newUser);
-        return newUser;
+        return userRepository.createUser(newUser);
     }
 
     /**
@@ -94,8 +74,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User updateUser(User updatedUser) {
-        userStorage.updateUser(updatedUser);
-        return updatedUser;
+        final User user = userRepository.getById(updatedUser.getId())
+                .orElseThrow(() -> new NotFoundException("Пользователь с с id:" + updatedUser.getId() + "не найден"));
+        return userRepository.updateUser(updatedUser);
     }
 
     /**
@@ -103,7 +84,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User getUserById(Long id) {
-        return userStorage.getUserById(id);
+        final User user = userRepository.getById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id:" + id + "не найден"));
+        return user;
     }
 
     /**
@@ -111,12 +94,6 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public List<User> getUserFriends(Long id) {
-        Set<Long> friendsId = userStorage.getUserById(id).getFriends();
-
-        List<User> users = new ArrayList<>();
-        friendsId.stream()
-                .map(userStorage::getUserById)
-                .forEach(users::add);
-        return users;
+        return userRepository.getFriends(getUserById(id));
     }
 }

@@ -1,17 +1,20 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.GenreRepository;
+import ru.yandex.practicum.filmorate.repository.RatingRepository;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 import java.util.Collection;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * FilmServiceImpl — это сервис, который реализует функциональность FilmService.
@@ -19,26 +22,21 @@ import java.util.stream.Collectors;
  * соответственно.
  */
 @Service
+@AllArgsConstructor
 public class FilmServiceImpl implements FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
-
-    @Autowired
-    public FilmServiceImpl(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
+    private final FilmRepository filmRepository;
+    private final RatingRepository ratingRepository;
+    private final GenreRepository genreRepository;
+    private final UserRepository userRepository;
 
     /**
      * Метод addLike добавляет лайк фильму с идентификатором filmId от пользователя с идентификатором userId.
      */
     @Override
     public void addLike(Long filmId, Long userId) {
-        if (userStorage.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователя с таким id:" + userId + " не существует");
-        }
-        Film film = filmStorage.getFilmById(filmId);
-        film.getLikes().add(userId);
+        User user = userRepository.getById(userId).orElseThrow(() -> new NotFoundException("Пользователь с " + userId
+                + "не найден"));
+        filmRepository.addLike(filmId, userId);
     }
 
     /**
@@ -46,20 +44,17 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     public void deleteLike(Long filmId, Long userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        film.getLikes().remove(user.getId());
+        User user = userRepository.getById(userId).orElseThrow(() -> new NotFoundException("Пользователь с " + userId
+                + "не найден"));
+        filmRepository.deleteLike(filmId, userId);
     }
 
     /**
      * Метод getLikedFilms возвращает список популярных фильмов. Количество фильмов в списке задаётся параметром count.
      */
     @Override
-    public List<Film> getLikedFilms(Integer count) {
-        return filmStorage.getAllFilms().stream()
-                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
+    public Collection<Film> getLikedFilms(Integer count) {
+        return filmRepository.getLikedFilms(count);
     }
 
     /**
@@ -67,7 +62,7 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     public Collection<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        return filmRepository.getAllFilms();
     }
 
     /**
@@ -75,8 +70,16 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     public Film createFilm(Film newFilm) {
-        filmStorage.createFilm(newFilm);
-        return newFilm;
+        if (newFilm.getGenres() != null) {
+            final List<Long> genreIds = newFilm.getGenres().stream().map(Genre::getId).toList();
+            final Collection<Genre> genres = genreRepository.findByIds(genreIds);
+            if (genres.size() != genreIds.size()) {
+                throw new ValidationException("Жанры не найдены");
+            }
+        }
+        ratingRepository.findById(newFilm.getMpa().getId())
+                .orElseThrow(() -> new ValidationException("MPA с " + newFilm.getMpa().getId() + "не найден"));
+        return filmRepository.createFilm(newFilm);
     }
 
     /**
@@ -84,7 +87,28 @@ public class FilmServiceImpl implements FilmService {
      */
     @Override
     public Film updateFilm(Film updatedFilm) {
-        filmStorage.updateFilm(updatedFilm);
-        return updatedFilm;
+        filmRepository.getFilmById(updatedFilm.getId())
+                .orElseThrow(() -> new NotFoundException("Фильм с " + updatedFilm.getId() + "не найден"));
+
+        ratingRepository.findById(updatedFilm.getMpa().getId())
+                .orElseThrow(() -> new NotFoundException("MPA с " + updatedFilm.getMpa().getId() + "не найден"));
+
+        if (updatedFilm.getGenres() != null) {
+
+            final List<Long> genreIds = updatedFilm.getGenres().stream().map(Genre::getId).toList();
+            final Collection<Genre> genres = genreRepository.findByIds(genreIds);
+            if (genres.size() != genreIds.size()) {
+                throw new ValidationException("Для фильма " + updatedFilm.getId() + " указаны несуществующие жанры");
+            }
+        }
+        return filmRepository.updateFilm(updatedFilm);
+    }
+
+    @Override
+    public Film getFilmById(long id) {
+        final Film film = filmRepository.getFilmById(id)
+                .orElseThrow(() -> new NotFoundException("Фильм с " + id + "не найден"));
+
+        return film;
     }
 }
